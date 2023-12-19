@@ -13,6 +13,8 @@ namespace Da\TwoFA\Service;
 
 use Da\QrCode\Contracts\ErrorCorrectionLevelInterface;
 use Da\QrCode\QrCode;
+use Da\QrCode\Writer\AbstractWriter;
+use Da\QrCode\Writer\SvgWriter;
 use Da\TwoFA\Contracts\StringGeneratorServiceInterface;
 
 class QrCodeDataUriGeneratorService implements StringGeneratorServiceInterface
@@ -25,17 +27,23 @@ class QrCodeDataUriGeneratorService implements StringGeneratorServiceInterface
      * @var int the size of the qr code. Recommended size is 200 for readability.
      */
     private $size;
+    /**
+     * @var AbstractWriter
+     */
+    private $writer;
 
     /**
      * QrCodeDataUriGeneratorService constructor.
      *
      * @param string $totpSecreteKeyUri
      * @param int    $size
+     * @param AbstractWriter $writer
      */
-    public function __construct(string $totpSecreteKeyUri, int $size = 200)
+    public function __construct(string $totpSecreteKeyUri, int $size = 200, $writer = null)
     {
         $this->totpSecretKeyUri = $totpSecreteKeyUri;
         $this->size = $size;
+        $this->writer = $writer;
     }
 
     /**
@@ -43,7 +51,7 @@ class QrCodeDataUriGeneratorService implements StringGeneratorServiceInterface
      */
     public function run(): string
     {
-        return (new QrCode($this->totpSecretKeyUri, ErrorCorrectionLevelInterface::MEDIUM))
+        return (new QrCode($this->totpSecretKeyUri, ErrorCorrectionLevelInterface::MEDIUM, $this->writer))
             ->setSize((int)$this->size)
             ->writeDataUri();
     }
